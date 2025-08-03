@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  const usersInRoom = await adminDb
+  const usersInRoom = await adminDb()
     .collectionGroup("rooms")
     .where("userId", "==", sessionClaims?.email)
     .get();

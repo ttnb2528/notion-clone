@@ -13,7 +13,7 @@ export async function createNewDocument() {
     throw new Error("User email not found in session claims");
   }
 
-  const docCollectionRef = adminDb.collection("documents");
+  const docCollectionRef = adminDb().collection("documents");
   const docRef = await docCollectionRef.add({
     title: "New Doc",
   });
@@ -22,7 +22,7 @@ export async function createNewDocument() {
     throw new Error("User email not found in session claims");
   }
 
-  await adminDb
+  await adminDb()
     .collection("users")
     .doc(sessionClaims.email)
     .collection("rooms")
@@ -44,14 +44,14 @@ export async function deleteDocument(roomId: string) {
 
   try {
     // delete the document reference itself
-    await adminDb.collection("documents").doc(roomId).delete();
+    await adminDb().collection("documents").doc(roomId).delete();
 
-    const query = await adminDb
+    const query = await adminDb()
       .collectionGroup("rooms")
       .where("roomId", "==", roomId)
       .get();
 
-    const batch = adminDb.batch();
+    const batch = adminDb().batch();
 
     // delete all user references to the document
     query.docs.forEach((doc) => {
@@ -81,7 +81,7 @@ export async function inviteUserToDocument(roomId: string, email: string) {
   );
 
   try {
-    await adminDb
+    await adminDb()
       .collection("users")
       .doc(email)
       .collection("rooms")
@@ -106,7 +106,7 @@ export async function removeUserFromDocument(roomId: string, email: string) {
   console.log("Removing user from document with roomId:");
 
   try {
-    await adminDb
+    await adminDb()
       .collection("users")
       .doc(email)
       .collection("rooms")
