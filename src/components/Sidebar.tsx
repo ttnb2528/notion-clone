@@ -41,7 +41,7 @@ function Sidebar() {
     editor: [],
   });
 
-  const [data, loading, error] = useCollection(
+  const [data, , error] = useCollection(
     user &&
       query(
         collectionGroup(db, "rooms"),
