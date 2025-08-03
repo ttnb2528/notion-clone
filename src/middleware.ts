@@ -4,6 +4,7 @@ const isPublicRoute = createRouteMatcher([
   '/health',
   '/test', 
   '/debug',
+  '/simple',
   '/api/health'
 ]);
 
