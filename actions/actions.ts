@@ -13,28 +13,33 @@ export async function createNewDocument() {
     throw new Error("User email not found in session claims");
   }
 
-  const docCollectionRef = adminDb().collection("documents");
-  const docRef = await docCollectionRef.add({
-    title: "New Doc",
-  });
+  try {
+    const docCollectionRef = adminDb().collection("documents");
+    const docRef = await docCollectionRef.add({
+      title: "New Doc",
+    });
 
-  if (!sessionClaims.email) {
-    throw new Error("User email not found in session claims");
-  }
+    if (!sessionClaims.email) {
+      throw new Error("User email not found in session claims");
+    }
 
-  await adminDb()
-    .collection("users")
-    .doc(sessionClaims.email)
-    .collection("rooms")
-    .doc(docRef.id)
-    .set({
+    await adminDb()
+      .collection("users")
+      .doc(sessionClaims.email)
+      .collection("rooms")
+      .doc(docRef.id)
+      .set({
       userId: sessionClaims.email,
       role: "owner",
       createdAt: new Date(),
       roomId: docRef.id,
     });
 
-  return { docId: docRef.id };
+    return { docId: docRef.id };
+  } catch (error) {
+    console.error("Error creating document:", error);
+    throw new Error("Failed to create document. Please check Firebase configuration.");
+  }
 }
 
 export async function deleteDocument(roomId: string) {

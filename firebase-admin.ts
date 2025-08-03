@@ -11,16 +11,8 @@ const getServiceAccount = (): ServiceAccount => {
     return JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
   }
   
-  // If running locally, try to import the service key file
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require("./service_key.json");
-  } catch {
-    // During build time or if file doesn't exist, return empty object
-    // This will only cause an error if Firebase is actually used
-    console.warn("Service key not found - Firebase Admin will not work properly");
-    return {} as ServiceAccount;
-  }
+  // If no environment variable, we need Firebase credentials
+  throw new Error("FIREBASE_SERVICE_ACCOUNT environment variable is required in production");
 };
 
 // Initialize Firebase Admin only when needed
