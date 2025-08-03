@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 
 let app: App;
 
-// Load service account from environment variables
+// Load service account from environment variables - only when needed
 const getServiceAccount = (): ServiceAccount => {
   // If running in production (Vercel), use environment variable
   if (process.env.FIREBASE_SERVICE_ACCOUNT) {
@@ -16,22 +16,32 @@ const getServiceAccount = (): ServiceAccount => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("./service_key.json");
   } catch {
-    throw new Error(
-      "Firebase service account not found. Please ensure FIREBASE_SERVICE_ACCOUNT environment variable is set or service_key.json exists locally."
-    );
+    // During build time or if file doesn't exist, return empty object
+    // This will only cause an error if Firebase is actually used
+    console.warn("Service key not found - Firebase Admin will not work properly");
+    return {} as ServiceAccount;
   }
 };
 
-const serviceAccount = getServiceAccount();
-
-if (getApps().length === 0) {
+// Initialize Firebase Admin only when needed
+const initializeFirebaseAdmin = () => {
+  if (getApps().length === 0) {
+    const serviceAccount = getServiceAccount();
     app = initializeApp({
-        credential: cert(serviceAccount),
+      credential: cert(serviceAccount),
     });
-} else {
+  } else {
     app = getApp();
-}
+  }
+  return app;
+};
 
-const adminDb = getFirestore(app);
+// Lazy initialization - only initialize when adminDb is accessed
+const getAdminDb = () => {
+  if (!app) {
+    initializeFirebaseAdmin();
+  }
+  return getFirestore(app);
+};
 
-export { adminDb, app as appAdmin };
+export { getAdminDb as adminDb, app as appAdmin };
